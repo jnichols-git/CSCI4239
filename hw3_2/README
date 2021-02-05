@@ -1,0 +1,32 @@
+HW3: Performance
+
+This is mostly based on ex05, making incremental changes to the shader
+and testing the effects of each. The changes are cumulative,
+so shadow3 contains the same changes as shadow2, with some added
+on.
+
+Willem A. (Vlakkies) Schreuder
+CSCI4229/5229 Spring 2021
+
+with Frame Buffer Depth Texture by Jay Kominek
+Demonstate shadows using the shadow map algorithm using a shader.
+
+Key bindings
+  m/M        Show/hide shadow map
+  p/P        Switch shaders
+  o/O        Cycle through objects
+  +/-        Change light elevation
+  []         Change light position
+  s/S        Start/stop light movement
+  <>         Decrease/increase number of slices in objects
+  b/B        Toggle room box
+  arrows     Change view angle
+  PgDn/PgUp  Zoom in and out
+  0          Reset view angle
+  ESC        Exit
+
+
+Changes:
+shadow : original
+shadow2: uses explicit computation of dot products and normalization
+shadow3:

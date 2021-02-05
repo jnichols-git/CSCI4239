@@ -1,0 +1,49 @@
+hw1: Particles and Performance
+
+James Nichols
+CSCI4239/5239 Spring 2021
+
+Trying different methods of particle generation to see how
+they affect performance
+
+Key bindings
+  m          Toggle shader
+  p          Switch shader version
+  +/-        Increase/decrease particle count (Press r after!)
+  r          Refresh particle count (avoid repopulating every time)
+  w/s        Increase/decrease volume where particles appear
+  arrows     Change view angle
+  0          Reset view angle
+  ESC        Exit
+
+I'm going to test the performance of a few things
+-Compute position on CPU (in hw3.cpp)
+-Compute position on GPU with shaders.
+  -V1: Pretty much directly copied from ex16. This'll be the "standard"
+  -V2: Using functions instead of inline code to set color/pos
+  -V3: Actively sabotaging myself by looping unnecessarily
+  -V4: V3, but using a uniform to chose how many times to run.
+
+Findings (tested with 10k particles on my machine):
+  V1 is obviously faster than doing it with the CPU.
+
+  V2 is about the same as V1, despite doing ridiculous function calls.
+
+  V3 pulls around 5000 FPS to V1/2's 9000, but that's still pretty
+  impressive considering I'm asking it to loop 4096 times for each particle.
+  Did you know that 4096 is the maximum number of times GLSL's compiler
+  will unroll a loop for you? I sure do now.
+
+  V4 does the *exact* same thing functionally as V3, but has 3400 FPS
+  instead of 5000. Turns out it's harder for the compiler to optimize
+  a loop when it's incrementing based on a uniform.
+
+Conclusion:
+  As long as you solve a problem within GLSL, in some non-arbitrarily-awful
+  manner, the compiler seems to make the difference negligible. Even
+  my arbitrarily bad solution (V3) ran pretty well. Functionally,
+  that's 4096*10000*5000 increments a second.
+
+  Using uniforms, however, causes some serious overhead since the compiler
+  can't predict the value.
+

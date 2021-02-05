@@ -1,0 +1,44 @@
+hw2: Procedural Fractal Texture
+James Nichols
+CSCI4239/5239 Spring 2021
+
+Using fragment shaders to generate a fractal texture on different
+objects. Works best on cubes, but does technically work on other
+shapes.
+
+Key bindings
+  m          Toggle shaders
+  o          Change objects
+  i          Change position
+  l          Toggle light rotation
+  arrows     Change view angle
+  Plus/Minus Increase/decrease fractal iterations
+  PgDn/PgUp  Zoom out/in
+  0          Reset view angle
+  ESC        Exit
+
+There are 3 shaders included; a simple fractal, colored fractal,
+and checkered fractal.
+  -Simple: The most common pattern I found. Discards fragments
+    rather than recoloring them; most fractal images that I found
+    are hollow, so this seemed like the "default".
+  -Colored: Basically the same as the simple one, just recoloring
+    instead of discarding. Can make viewing the cube while zoomed
+    out easier since you don't see the back side.
+  -Checkered: Changes up the range-checking algorithm slightly
+    so that you get a sort of checkerboard pattern rather than
+    one hole.
+
+These all work by checking the x and y position in texture coordinates
+against a "center range" represented by a vec2. If you take a pixel p,
+Simple/Colored check that p.x AND p.y are in range, while Checkered
+checks that p.x XOR p.y are in range.
+
+I did a lot of research and messing around before I started on the
+fractal idea, so total 10 hours, but I'd say about 4 of that was
+working through the end result.
+
+Recommendations:
+  Object: Cube, Position: 2, Shader: Any
+  Object: Icosahedron/Sphere, Position: 1, Shader: Simple/Colored
+  Object: Icosahedron/Sphere, Position: 0, Shader: Checkerboard
