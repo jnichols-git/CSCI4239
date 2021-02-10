@@ -1,0 +1,40 @@
+HW4: OpenGL 4 and Geometry Shaders
+
+James Nichols
+CSCI4229/5229 Spring 2021
+
+Part of this is using VBOs, but I didn't feel like writing code to
+convert a .obj file to a VBO yet, and I certainly didn't feel like
+doing the math for a new one. But then it hit me--what if I just made
+more cubes?
+
+Jokes aside, the purpose of this was to try out some things from the
+textbook, which is GL4 based, that I thought seemed interesting,
+primarily in/out blocks and geometry shader amplification. Where GL2
+draws 1 cube, GL4 draws 27 in a 3x3x3 pattern.
+
+Key bindings
+  m          Toggle shaders
+  o          Change objects
+  arrows     Change view angle
+  PgDn/PgUp  Zoom in and out
+  +/-        Increase/decrease iterations
+  d/a        Increase/decrease cube size
+  0          Reset view angle
+  ESC        Exit
+
+This took me around 5 hours to complete.
+
+Findings:
+  The geometry shader seems to invoke a lot of overhead, and the GL2
+  way is faster when drawing fewer cubes. However, once you get up
+  into big numbers, GL4 makes up the difference. I tested it with
+  ~250,000 cubes, and got 14 and 74 FPS with OpenGL 2 and 4 respectively.
+
+  The other downside is that unless you switch to calculating things
+  in the geometry shader, the instanced geometry will share *all*
+  properties; including matrix transforms. You have to pass stuff to
+  the geometry shader if you want to change for instances, which I did
+  with the ModelViewProjection matrix. It looks silly if you don't.
+
+  Input/output blocks are pretty sweet.
