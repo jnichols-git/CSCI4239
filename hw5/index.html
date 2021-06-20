@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="./imgsearch.js"></script>
+    <script src="./webgl.js"></script>
+
+    <!-- Shaders -->
+    <script id="vert-shader" type="shader/vs">
+      precision highp float;
+      // Lighting properties
+      uniform vec3 light_pos;
+      // Attributes/Uniforms
+      attribute vec3 POS;
+      attribute vec3 COL;
+      attribute vec3 NRM;
+      attribute vec2 TEX;
+      uniform mat4 Projection;
+      uniform mat4 View;
+      uniform mat4 ModelView;
+      uniform mat3 Normal;
+
+      varying vec4 color;
+      varying vec2 texcoord;
+
+      vec4 Global  = vec4(0.1,0.1,0.1,1.0);
+      vec4 Ambient = vec4(0.3,0.3,0.3,1.0);
+      vec4 Diffuse = vec4(0.8,0.8,0.8,1.0);
+
+      vec4 phong() {
+        vec4 P = Projection * ModelView * vec4(POS,1);
+        vec3 N = normalize(Normal * NRM);
+        vec3 L = normalize(vec3(View*vec4(light_pos,1.0)) - vec3(P));
+        vec4 C = (Global+Ambient)*color;
+        float intensity = dot(L,N);
+        C = vec4(N,1.0);
+        if(intensity>0.0) {
+          C += intensity * Diffuse * C;
+          //C = vec4(1.0,1.0,1.0,1.0);
+        }
+        return C;
+      }
+
+      void main(void) {
+        color       = vec4(COL,1);
+        color       = phong();
+        texcoord    = TEX;
+        gl_Position = Projection * ModelView * vec4(POS,1);
+      }
+    </script>
+
+    <script id="frag-shader" type="shader/fs">
+      precision highp float;
+      varying vec4      color;
+      varying vec2      texcoord;
+      uniform sampler2D tex;
+      void main(void) {
+        gl_FragColor = color*texture2D(tex, texcoord);
+      }
+    </script>
+
+    <!-- WebGL Code -->
+    <script type="text/javascript">
+    function CompileShader(gl,id)
+    {
+       //  Get shader by id
+       var src = document.getElementById(id);
+       //  Create shader based on type setting
+       var shader;
+       if (src.type == "shader/fs")
+          shader = gl.createShader(gl.FRAGMENT_SHADER);
+       else if (src.type == "shader/vs")
+          shader = gl.createShader(gl.VERTEX_SHADER);
+       else
+          return null;
+       //  Read source into str
+       var str = "";
+       var k = src.firstChild;
+       while (k)
+       {
+          if (k.nodeType == 3) str += k.textContent;
+          k = k.nextSibling;
+       }
+       gl.shaderSource(shader, str);
+       //  Compile the shader
+       gl.compileShader(shader);
+       //  Check for errors
+       if (gl.getShaderParameter(shader, gl.COMPILE_STATUS) == 0)
+          alert(gl.getShaderInfoLog(shader));
+       //  Return shader
+       return shader;
+    }
+
+    function CompileShaderProg(gl,vert,frag)
+    {
+       //  Compile the program
+       var prog  = gl.createProgram();
+       gl.attachShader(prog , CompileShader(gl,vert));
+       gl.attachShader(prog , CompileShader(gl,frag));
+       gl.linkProgram(prog);
+       //  Check for errors
+       if (gl.getProgramParameter(prog, gl.LINK_STATUS) == 0)
+          alert(gl.getProgramInfoLog(prog));
+       //  Return program
+       return prog;
+    }
+
+    var textures = new Array(16);
+    function loadTextures() {
+      for(var n=0; n<16; n++) {
+        textures[n] = loadTexture(gl, image_urls[n]);
+      }
+      setTimeout(display_callback, 1000);
+    }
+    // Draw a circle of panels
+    var base_th = 0;
+    function drawPanels() {
+      gl.bindBuffer(gl.ARRAY_BUFFER, panel);
+      for(var n=0; n<16; n++) {
+        var ModelView = mat4_translate(0,0,-5); // Base is view matrix, eye at 0,0,5
+        gl.uniformMatrix4fv(gl.getUniformLocation(shader, "View") , false, new Float32Array(ModelView));
+        // Set texture
+        if(textures[n]) {
+          gl.bindTexture(gl.TEXTURE_2D, textures[n]);
+        }
+        // Set spatial properties
+        var th = (n*22.5)+base_th;
+        //console.log(th);
+        var x  = Math.sin(th*Math.PI/180)*15;
+        var z  = Math.cos(th*Math.PI/180)*15 - 18;
+        var w = h = 2;
+        // Change aspect ratios
+        if(aspects) {
+          if(aspects[n] >= 1.0) w*=aspects[n];
+          else h*=aspects[n];
+        }
+        ModelView  = mat4_multiply(ModelView, mat4_translate(x,0,z));
+        ModelView  = mat4_multiply(ModelView, mat4_rotate(th,0,1,0));
+        ModelView  = mat4_multiply(ModelView, mat4_scale(w,h,2));
+        var Normal = mat3_normal(ModelView);
+        //console.log(Normal);
+        gl.uniformMatrix4fv(gl.getUniformLocation(shader, "ModelView") , false, new Float32Array(ModelView));
+        gl.uniformMatrix3fv(gl.getUniformLocation(shader, "Normal") , false, new Float32Array(Normal));
+        // Choose lighting position
+        var light_pos = [0,0,2];
+        gl.uniform3fv(gl.getUniformLocation(shader,"light_pos"), light_pos);
+        // Position array
+        var POS = gl.getAttribLocation(shader, "POS");
+        gl.enableVertexAttribArray(POS);
+        gl.vertexAttribPointer(POS, 3, gl.FLOAT, false, 44, 0);
+        // Color array
+        var COL = gl.getAttribLocation(shader, "COL");
+        gl.enableVertexAttribArray(COL);
+        gl.vertexAttribPointer(COL, 3, gl.FLOAT, false, 44, 12);
+        // Normal array
+        var NRM = gl.getAttribLocation(shader, "NRM");
+        gl.enableVertexAttribArray(NRM);
+        gl.vertexAttribPointer(NRM, 3, gl.FLOAT, false, 44, 24)
+        // TexCoord array
+        var TEX = gl.getAttribLocation(shader, "TEX");
+        gl.enableVertexAttribArray(TEX);
+        gl.vertexAttribPointer(TEX, 2, gl.FLOAT, false, 44, 36);
+        // Draw arrays
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        gl.disableVertexAttribArray(POS);
+        gl.disableVertexAttribArray(COL);
+        gl.disableVertexAttribArray(NRM);
+        gl.disableVertexAttribArray(TEX);
+      }
+    }
+
+    function autoRefresh() {
+      if(key_left) base_th -= 2;
+      if(key_right) base_th+= 2;
+      display_callback();
+      //setTimeout(autoRefresh, 50);
+    }
+
+    var gl, canvas, shader, panel;
+    function startGL() {
+      // Get canvas in HTML document
+      canvas = document.getElementById("canvas");
+      var size = Math.min(window.innerWidth, window.innerHeight);
+      canvas.width  = size;
+      canvas.height = size;
+      canvas.style.width = "1";
+      canvas.style.height= "1";
+
+      // Start WebGL
+      if(!window.WebGLRenderingContext) {
+        alert("Your browser doesn't support WebGL.");
+        return;
+      }
+
+      // Try to get GL context
+      try {
+        gl = canvas.getContext("experimental-webgl");
+      } catch(e) {
+        alert(e);
+      }
+      if(!gl) {
+        alert("WebGL Machine Broke");
+        return;
+      }
+
+      // Set callbacks in imgsearch.js
+      display_callback = Display;
+      loadtex_callback = loadTextures;
+      // Set key event listeners
+      document.addEventListener('keydown', keyDown, false);
+      document.addEventListener('keyup',   keyUp,   false);
+      // Set viewport
+      gl.viewport(0,0,size,size);
+      // Load shader
+      shader = CompileShaderProg(gl, "vert-shader", "frag-shader");
+      gl.useProgram(shader);
+
+      // E.
+      // Generate data for a photo panel
+      var vtx_ct_panel = 6;
+      var data_panel   = [
+      //  X    Y    Z    R   G   B   NX  NY  NZ   S T
+        -0.5,-0.5,+0.0, 1.0,1.0,1.0, 0.0,0.0,1.0, 0,1,
+        +0.5,-0.5,+0.0, 1.0,1.0,1.0, 0.0,0.0,1.0, 1,1,
+        -0.5,+0.5,+0.0, 1.0,1.0,1.0, 0.0,0.0,1.0, 0,0,
+        -0.5,+0.5,+0.0, 1.0,1.0,1.0, 0.0,0.0,1.0, 0,0,
+        +0.5,-0.5,+0.0, 1.0,1.0,1.0, 0.0,0.0,1.0, 1,1,
+        +0.5,+0.5,+0.0, 1.0,1.0,1.0, 0.0,0.0,1.0, 1,0
+      ];
+      // Load panel data into a VBO
+      panel = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, panel);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data_panel), gl.STATIC_DRAW);
+      // Set state
+      gl.enable(gl.DEPTH_TEST);
+      gl.clearColor(0.8,0.8,0.8,1);
+
+      // Begin refreshing
+      autoRefresh();
+
+
+      // Display function
+      var Projection = mat4_perspective(45.0, canvas.width/canvas.height, 3.0);
+      function Display() {
+        gl.clear(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT);
+        // Load in matrices
+        var Projection = mat4_perspective(45.0, canvas.width/canvas.height, 3.0);
+        gl.uniformMatrix4fv(gl.getUniformLocation(shader, "Projection"), false, new Float32Array(Projection));
+        drawPanels();
+        // Flush
+        gl.flush();
+      }
+
+      // Canvas resize callback
+      canvas.resize = function() {
+        var size = math.min(window.innerWidth, window.innerHeight);
+        canvas.width = size;
+        canvas.height = size;
+        gl.viewport(0,0,size,size);
+        Display();
+      }
+    }
+    </script>
+
+  <title>WebGL Image Search</title>
+  </head>
+  <body>
+    <div class="container">
+      <label for="tags">Tags</label><br>
+      <input type="text" name="tags" id="tags"><br>
+      <button value="Submit" onclick="makeNewApiCall()">Submit</button>
+    </div>
+    <canvas id="canvas" onresize="canvas.resize();"></canvas><br>
+    <button value="Redisplay" onclick="makeApiCall()">Load More</button>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+  	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      startGL();
+    </script>
+  </body>
+</html>

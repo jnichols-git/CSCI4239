@@ -1,0 +1,19 @@
+hw5: WebGL Image Search
+
+This homework is designed to expand on a previous piece of coursework that
+calls an image search API. Rather than just having the images show up in a
+boring old gallery, I'll have them show up in some 3D representation. This project
+should work just by opening index.html in a WebGL-compatible browser.
+
+You can type in a search term in the top bar, then use the left and right
+arrow keys to rotate the gallery. Under the canvas, a button can load more
+images from the same term (pressing search again returns the same or similar
+results).
+
+Unfortunately, I was unable to get lighting working. I've included a .zip
+with the files that attempt to use it, but I'm unsure of how to resolve the
+current errors.
+
+I spent around 10 hours on this assignment.
+
+p.s. this has been a very good reminder that I need to work on my javascript.

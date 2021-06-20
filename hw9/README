@@ -1,0 +1,24 @@
+hw9: Particle Volume 2
+
+James Nichols
+CSCI4239/5239 Spring 2021
+
+The particle system is back with more potential particles, point sprites,
+smoother transitions, and compute shaders!
+
+Key bindings
+  m          Toggle shader
+  arrows     Change view angle
+  PgDn/PgUp  Zoom in and out
+  0          Reset view angle
+  +/-        Increase/Decrease volume
+  a/d        Increase/Decrease particle count (sort of)
+  ESC        Exit
+
+I just wanted to give the particle system another shot with some of
+the new features available to me in compute shaders. As you can see,
+it looks a lot better now, but there are still some issues to work out,
+mainly that there always seems to be a lot of particles, even at low
+counts. I suspect this is due to the "real" amount of particles being
+1,000,000. That said, I figured it was a better demo of a compute shader
+to have a huge number of them anyways.

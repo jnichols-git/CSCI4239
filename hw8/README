@@ -1,0 +1,21 @@
+hw8: Particle Effects
+
+James Nichols
+CSCI4239/5239 Spring 2021
+
+Demonstrating a very basic use of shaders to show particle reflections
+
+Key bindings
+  m          Toggle shader
+  o          Change objects
+  arrows     Change view angle
+  PgDn/PgUp  Zoom in and out
+  +/-        Change plane angle
+  0          Reset view angle
+  ESC        Exit
+
+A lot of the conversation we had in class regarding particle interaction
+revolved around heavy CPU usage to accomplish it by calculating the position
+there instead of in the shader. I was curious what steps could be taken to implement
+environmental interaction in a shader, and accomplished basic reflection off of
+a rotating plane.

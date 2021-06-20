@@ -1,0 +1,5 @@
+hw5: WebGL Image Search
+
+This homework is designed to expand on a previous piece of coursework that
+calls an image search API. Rather than just having the images show up in a
+boring old gallery, I'll have them show up in some 3D representation.

@@ -77,7 +77,7 @@ const float cube_data[] =  // Vertex data
    +1,-1,-1,+1,   0,-1, 0,   1,0,1,1,  1,0,
    -1,-1,+1,+1,   0,-1, 0,   1,0,1,1,  0,1,
    +1,-1,+1,+1,   0,-1, 0,   1,0,1,1,  1,1,
-   };
+};
 
 //
 //  Initialize cube VBO
@@ -259,6 +259,7 @@ void display(GLFWwindow* window)
             // Set matrices in shader
             id = glGetUniformLocation(shader[mode],"ModelViewMatrix");
             glUniformMatrix4fv(id,1,0,modelview);
+            mat4print("ModelView", modelview);
             id = glGetUniformLocation(shader[mode],"NormalMatrix");
             glUniformMatrix3fv(id,1,0,normal);
             glDrawArrays(GL_TRIANGLES,0,cube_size);

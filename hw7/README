@@ -1,0 +1,33 @@
+hw7: Stored Textures
+
+James Nichols
+CSCI4239/5239 Spring 2021
+
+Using textures to store information for shaders
+
+Key bindings
+  m          Toggle shader
+  arrows     Change view angle
+  +/-        Change particle volume size (mode 0)
+  r          Change ripple type (mode 1)
+  0          Reset view angle
+  ESC        Exit
+
+I made 2 things: a particle volume generator, and a ripple generator. Each
+works primarily by storing time values as color, then sampling those values
+in a shader to determine what a specific pixel is doing.
+
+Particle Volume:
+  This one stores the time of peak intensity in alpha, then stores particle
+  color as RGB. As time approaches the alpha value (scale 0-1), the color of
+  that pixel becomes brighter. To simulate an actual volume, a series of cubes
+  are drawn that this shader is applied to, sampling a 3D texture to do so.
+
+Ripples:
+  This one is a bit more complicated. r is the time where the center of the
+  ripple is at max height, g is the time relative to r where that part of the
+  ripple is at max height (inverse), and b is the wavelength of the cosine
+  wave used to represent a ripple. This one doesn't perform very well right now,
+  but that's because I am having trouble generating vertex data for a subdivided
+  plane, so instead I'm drawing 128x128 regular ones and changing vertex coordinates
+  in the shader.
